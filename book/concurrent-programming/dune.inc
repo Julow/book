@@ -1,11 +1,6 @@
-(rule
- (target findlib.conf)
- (action (write-file %{target} "")))
-
 (alias
  (name   runtest)
  (deps   (:x README.md)
-         (:conf findlib.conf)
          (package mdx)
          (package async)
          (package cohttp-async)
@@ -31,7 +26,7 @@
          prelude.ml)
  (locks ../../global-lock)
  (action (progn
-           (setenv OCAMLFIND_CONF %{conf} (run ocaml-mdx test --prelude=prelude.ml --direction=to-md %{x}))
+           (run ocaml-mdx test --prelude=prelude.ml --direction=to-md %{x})
            (diff? %{y8} %{y8}.corrected)
            (diff? %{y7} %{y7}.corrected)
            (diff? %{y6} %{y6}.corrected)
@@ -45,7 +40,6 @@
 (alias
  (name   runtest-all)
  (deps   (:x README.md)
-         (:conf findlib.conf)
          (package mdx)
          (package async)
          (package cohttp-async)
@@ -71,7 +65,7 @@
          prelude.ml)
  (locks ../../global-lock)
  (action (progn
-           (setenv OCAMLFIND_CONF %{conf} (run ocaml-mdx test --prelude=prelude.ml --direction=to-md --non-deterministic %{x}))
+           (run ocaml-mdx test --prelude=prelude.ml --direction=to-md --non-deterministic %{x})
            (diff? %{y8} %{y8}.corrected)
            (diff? %{y7} %{y7}.corrected)
            (diff? %{y6} %{y6}.corrected)

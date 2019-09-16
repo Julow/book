@@ -1,11 +1,6 @@
-(rule
- (target findlib.conf)
- (action (write-file %{target} "")))
-
 (alias
  (name   runtest)
  (deps   (:x README.md)
-         (:conf findlib.conf)
          (package mdx)
          (package core)
          (package ppx_jane)
@@ -19,7 +14,7 @@
          prelude.ml)
  (locks ../../global-lock)
  (action (progn
-           (setenv OCAMLFIND_CONF %{conf} (run ocaml-mdx test --prelude=prelude.ml --prelude=catch_all:catch_all.ml --prelude=logger:logger.ml --direction=to-md %{x}))
+           (run ocaml-mdx test --prelude=prelude.ml --prelude=catch_all:catch_all.ml --prelude=logger:logger.ml --direction=to-md %{x})
            (diff? %{y3} %{y3}.corrected)
            (diff? %{y2} %{y2}.corrected)
            (diff? %{y1} %{y1}.corrected)
