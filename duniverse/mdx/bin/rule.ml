@@ -29,17 +29,6 @@ let prepend_root r b = match r with
   | None   -> b
   | Some r -> Filename.concat r b
 
-let findlib_conf_gen_rule =
-  let target = "findlib.conf" in
-  let action =
-    {|(write-file %{target} "")|}
-  in
-  Printf.sprintf
-    ("(rule\n"
-     ^^ " (target %s)\n"
-     ^^ " (action %s))\n")
-    target action
-
 let pp_locks_field fmt dirs_and_files =
   match dirs_and_files with
   | [] -> ()
@@ -50,7 +39,7 @@ let pp_locks_field fmt dirs_and_files =
     Fmt.(list ~sep string) fmt (" (locks"::l);
     Fmt.pf fmt ")\n"
 
-let print_rule ~nd ~prelude ~md_file ~ml_files ~dirs ~root ~packages ~duniverse_mode ~locks
+let print_rule ~nd ~prelude ~md_file ~ml_files ~dirs ~root ~packages ~locks
     options =
   let ml_files = String.Set.elements ml_files in
   let ml_files = List.map (prepend_root root) ml_files in
@@ -102,12 +91,8 @@ let print_rule ~nd ~prelude ~md_file ~ml_files ~dirs ~root ~packages ~duniverse_
         Fmt.(list ~sep:(unit " ") string) options
         arg root
     in
-    if duniverse_mode then
-      Fmt.strf "(setenv OCAMLFIND_CONF %%{conf} %s)" run
-    else
-      run
+    run
   in
-  let conf_dep = if duniverse_mode then "\n         (:conf findlib.conf)" else "" in
   let pp name arg =
     Fmt.pr
       "\
@@ -120,7 +105,7 @@ let print_rule ~nd ~prelude ~md_file ~ml_files ~dirs ~root ~packages ~duniverse_
 \           (diff? %%{x} %%{x}.corrected))))\n"
       name
       md_file
-      conf_dep
+      ""
       deps
       pp_locks_field locks
       (run_action arg)
@@ -225,12 +210,8 @@ let run () md_file section direction prelude prelude_str root duniverse_mode loc
         List.map (Fmt.to_to_string pp_prelude_str) prelude_str @
         [Fmt.to_to_string pp_direction direction]
       in
-      if duniverse_mode then
-        ( Fmt.pr "%s" findlib_conf_gen_rule;
-          Fmt.pr "\n"
-        );
       print_rule ~md_file ~prelude ~nd ~ml_files ~dirs ~root ~packages
-        ~duniverse_mode ~locks options;
+        ~locks options;
       file_contents
   in
   Mdx.run md_file ~f:on_file;
